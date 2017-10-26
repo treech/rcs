@@ -43,7 +43,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:26.+'
-    //组件之间activity跳转的ARouter
+    //组件之间界面跳转的ARouter
     compile 'com.alibaba:arouter-api:1.2.1'
     annotationProcessor 'com.alibaba:arouter-compiler:1.1.2'
     //ButterKnife
