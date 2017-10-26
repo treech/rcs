@@ -57,4 +57,5 @@ task copyAPK(type: Copy) {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile(name: 'common-release', ext: 'aar')
 }
