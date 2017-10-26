@@ -65,10 +65,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.home_main_layout);
         requestPermissions();
 
-        Intent intent = new Intent();
-        intent.setClassName("com.chinasofti.message", "com.chinasofti.message.ImageService");
-        startService(intent);
-
         mContext = this;
         for (String title : mTitles) {
             mFragments.add(SimpleFragment.getInstance(title));
@@ -225,6 +221,10 @@ public class MainActivity extends AppCompatActivity {
                 pluginManager.loadPlugin(apk_origin);
                 YLog.e("###loadplugin time = " + (System.currentTimeMillis() - startTime) + "ms");
                 apk_origin.renameTo(apk_encrypt);
+
+                Intent intent = new Intent();
+                intent.setClassName("com.chinasofti.message", "com.chinasofti.message.ImageService");
+                startService(intent);
             } catch (Exception e) {
                 e.printStackTrace();
             }
