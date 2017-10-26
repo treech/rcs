@@ -1,0 +1,71 @@
+apply plugin: 'com.android.library'
+// greendao
+apply plugin: 'org.greenrobot.greendao'
+// butterknife
+apply plugin: 'com.jakewharton.butterknife'
+// dagger2
+apply plugin: 'com.neenbedankt.android-apt'
+
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [moduleName: project.getName()]
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://maven.google.com' }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:26.+'
+    //组件之间activity跳转的ARouter
+    compile 'com.alibaba:arouter-api:1.2.1'
+    annotationProcessor 'com.alibaba:arouter-compiler:1.1.2'
+    //ButterKnife
+    compile 'com.jakewharton:butterknife:8.2.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.2.1'
+    //Dagger2
+    compile 'com.google.dagger:dagger:2.6'
+    apt 'com.google.dagger:dagger-compiler:2.6'
+    //glide 其中网络请求改为okhttp
+    compile 'com.github.bumptech.glide:glide:4.2.0'
+    compile 'com.github.bumptech.glide:okhttp-integration:1.5.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.2.0'
+    //fastjason.android去掉Android虚拟机dalvik不支持的功能
+    compile 'com.alibaba:fastjson:1.1.64.android'
+    //greendao
+    compile 'org.greenrobot:greendao:3.2.2'
+    //RxAndroid
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    //RxJava
+    compile 'io.reactivex.rxjava2:rxjava:2.0.5'
+    //Retrofit
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    //RxPermission2
+    compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.3@aar'
+}
