@@ -10,6 +10,12 @@ android {
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [moduleName: project.getName()]
+            }
+        }
     }
     buildTypes {
         release {
@@ -30,9 +36,9 @@ android {
             def fileName
             if (outputFile != null && outputFile.name.endsWith('.apk')) {
                 if (variant.buildType.name.equals('release')) {
-                    fileName = "message_release.apk"
-                } else if (variant.buildType.name.equals('debug')) {
                     fileName = "message.apk"
+                } else if (variant.buildType.name.equals('debug')) {
+                    fileName = "message_debug.apk"
                 }
                 output.outputFile = new File(outputFile.parent, fileName)
             }
@@ -45,19 +51,10 @@ android {
     }
 }
 
-tasks.withType(JavaCompile) {
-    compileTask -> compileTask.dependsOn(copyAPK)
-}
-
-//copy the apk output file to home project
-task copyAPK(type: Copy) {
-    from 'build/outputs/apk/message.apk'
-    into '../home/src/main/assets/'
-}
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile(name: 'common-release', ext: 'aar')
+    compile 'com.android.support:appcompat-v7:26.+'
 }
 
 virtualApk {

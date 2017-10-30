@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -12,7 +13,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-
 import com.chinasofti.common.utils.log.YLog;
 import com.chinasofti.rcs.R;
 import com.chinasofti.rcs.entity.TabEntity;
@@ -21,19 +21,16 @@ import com.chinasofti.rcs.tab.listener.CustomTabEntity;
 import com.chinasofti.rcs.tab.listener.OnTabSelectListener;
 import com.chinasofti.rcs.tab.utils.UnreadMsgUtils;
 import com.chinasofti.rcs.tab.widget.MsgView;
-import com.chinasofti.rcs.utils.AssetsManager;
 import com.chinasofti.rcs.utils.ViewFindUtils;
 import com.didi.virtualapk.PluginManager;
 import com.tbruyelle.rxpermissions2.Permission;
 import com.tbruyelle.rxpermissions2.RxPermissions;
-
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Random;
-
+import dalvik.system.DexClassLoader;
 import io.reactivex.functions.Consumer;
-
-import static com.chinasofti.rcs.utils.AssetsManager.PLUGIN_DIR;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -41,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private String TAG = "MainActivity";
 
     private Context mContext;
-    private ArrayList<Fragment> mFragments = new ArrayList<>();
+
 
     Random mRandom = new Random();
     private String[] mTitles = {"消息", "通讯录", "通话", "我"};
@@ -59,18 +56,24 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private CommonTabLayout mTabLayout;
 
+    private Fragment messageFragment;
+    private ArrayList<Fragment> mFragments = new ArrayList<>();
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_main_layout);
         requestPermissions();
+    }
 
+    private void initUI() {
         mContext = this;
-        for (String title : mTitles) {
-            mFragments.add(SimpleFragment.getInstance(title));
-        }
-
         for (int i = 0; i < mTitles.length; i++) {
+            if (i == 0) {
+                mFragments.add(messageFragment);
+            } else {
+                mFragments.add(SimpleFragment.getInstance(mTitles[i]));
+            }
             mTabEntities.add(new TabEntity(mTitles[i], mIconSelectIds[i], mIconUnselectIds[i]));
         }
 
@@ -194,7 +197,6 @@ public class MainActivity extends AppCompatActivity {
                             YLog.e(TAG, permission.name + " is granted.");
                             count++;
                             if (count == 2) {
-                                AssetsManager.copyAllAssetsApk(MainActivity.this);
                                 loadPlugin(MainActivity.this);
                             }
                         } else if (permission.shouldShowRequestPermissionRationale) {
@@ -210,21 +212,38 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadPlugin(Context base) {
         PluginManager pluginManager = PluginManager.getInstance(base);
-
-        File apk_encrypt = new File(PLUGIN_DIR, "message-apk");
-        File apk_origin = new File(PLUGIN_DIR, "message.apk");
-        apk_encrypt.renameTo(apk_origin);
+        File plugin_dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath());
+        File apk_origin = new File(plugin_dir, "message.apk");
         YLog.i(TAG, "apk:" + apk_origin);
         if (apk_origin.exists()) {
             try {
                 long startTime = System.currentTimeMillis();
                 pluginManager.loadPlugin(apk_origin);
                 YLog.e("###loadplugin time = " + (System.currentTimeMillis() - startTime) + "ms");
-                apk_origin.renameTo(apk_encrypt);
 
                 Intent intent = new Intent();
                 intent.setClassName("com.chinasofti.message", "com.chinasofti.message.ImageService");
                 startService(intent);
+
+                Context ctx = null;
+                try {
+                    File optimizedApkPath = getDir("plugin",Context.MODE_PRIVATE);
+                    DexClassLoader classLoader = new DexClassLoader(plugin_dir + "/message.apk",
+                            optimizedApkPath.getAbsolutePath(),
+                            null,
+                            getClassLoader());
+                    Class mLoadClass = classLoader.loadClass("com.chinasofti.message.MessageFragment");
+                    Constructor constructor = mLoadClass.getConstructor(new Class[]{});
+                    Object obj = constructor.newInstance(new Object[]{});
+                    messageFragment = (Fragment) obj;
+                    initUI();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -47,16 +47,6 @@ android {
     }
 }
 
-tasks.withType(JavaCompile) {
-    compileTask -> compileTask.dependsOn(copyAPK)
-}
-
-//copy the apk output file to home project
-task copyAPK(type: Copy) {
-    from 'build/outputs/apk/contacts.apk'
-    into '../home/src/main/assets/'
-}
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile(name: 'common-release', ext: 'aar')

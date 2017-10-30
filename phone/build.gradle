@@ -32,9 +32,9 @@ android {
             def fileName
             if (outputFile != null && outputFile.name.endsWith('.apk')) {
                 if (variant.buildType.name.equals('release')) {
-                    fileName = "phone_release.apk"
-                } else if (variant.buildType.name.equals('debug')) {
                     fileName = "phone.apk"
+                } else if (variant.buildType.name.equals('debug')) {
+                    fileName = "phone_debug.apk"
                 }
                 output.outputFile = new File(outputFile.parent, fileName)
             }
@@ -45,16 +45,6 @@ android {
     lintOptions {
         abortOnError false
     }
-}
-
-tasks.withType(JavaCompile) {
-    compileTask -> compileTask.dependsOn(copyAPK)
-}
-
-//copy the apk output file to home project
-task copyAPK(type: Copy) {
-    from 'build/outputs/apk/phone.apk'
-    into '../home/src/main/assets/'
 }
 
 dependencies {
